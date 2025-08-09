@@ -40,15 +40,19 @@ VITE_API_TOKEN=<paste your bearer token here, or leave blank if using dev bypass
 
 # 4) Run dev server
 npm run dev
-Open: http://localhost:5173
+```
 
-If you see “Network error” or 401, read the Troubleshooting section.
+Open: [http://localhost:5173](http://localhost:5173)
 
-Backend (mock API) setup
+If you see “Network error” or 401, read the **Troubleshooting** section.
+
+---
+
+## Backend (mock API) setup
+
 If you already ran the server successfully, you can skip this.
 
-powershell
-Copy code
+```powershell
 # Windows PowerShell
 # Use Python 3.11 (avoids building native wheels)
 py -3.11 -m venv .venv
@@ -66,50 +70,46 @@ python -m app
 # (Option B) Dev bypass auth (no token needed)
 $env:DEV_NO_AUTH = "1"
 python -m app
+```
+
 Docs:
 
-Swagger: http://localhost:8547/docs
+- Swagger: [http://localhost:8547/docs](http://localhost:8547/docs)
+- Redoc: [http://localhost:8547/redoc](http://localhost:8547/redoc)
 
-Redoc: http://localhost:8547/redoc
+---
 
-How to use the app
-Book a table
+## How to use the app
 
-Pick date + party size → Check availability
+### Book a table
 
-Click an available time
+1. Pick date + party size → **Check availability**
+2. Click an available time
+3. Fill details → **Confirm booking**
+4. You’ll see a booking reference (copy button included)
 
-Fill details → Confirm booking
+### Manage a booking
 
-You’ll see a booking reference (copy button included)
+1. Switch to **Manage booking** tab
+2. Paste your reference → **Lookup**
+3. Update party size / special requests → **Save changes**
+4. To cancel: choose reason → **Cancel booking**
 
-Manage a booking
+---
 
-Switch to Manage booking tab
+## Short architecture / design overview
 
-Paste your reference → Lookup
+**Frameworks**
 
-Update party size / special requests → Save changes
+- React + TypeScript for UI
+- React Query for server state + caching
+- Axios for HTTP
+- React Hook Form + Zod for client-side validation
+- TailwindCSS for styling
 
-To cancel: choose reason → Cancel booking
+**Structure**
 
-Short architecture / design overview
-Frameworks
-
-React + TypeScript for UI
-
-React Query for server state + caching
-
-Axios for HTTP
-
-React Hook Form + Zod for client-side validation
-
-TailwindCSS for styling
-
-Structure
-
-bash
-Copy code
+```bash
 src/
   api/              # axios client + API functions
   features/
@@ -118,34 +118,32 @@ src/
     manage/         # lookup, update, cancel
   App.tsx           # tab switch between book/manage
   main.tsx          # React Query provider + app mount
-API communication
+```
 
-Base URL from VITE_API_BASE
+**API communication**
 
-Bearer token from VITE_API_TOKEN (or dev-bypass on backend)
+- Base URL from `VITE_API_BASE`
+- Bearer token from `VITE_API_TOKEN` (or dev-bypass on backend)
+- **Important:** POST/PATCH bodies use `application/x-www-form-urlencoded` (not JSON).  
+  We serialize with `URLSearchParams` / manual encoder.
 
-Important: POST/PATCH bodies use application/x-www-form-urlencoded (not JSON).
-We serialize with URLSearchParams / manual encoder.
+**Auth (per mock API)**
 
-Auth (per mock API)
+- Endpoints expect a Bearer token; for local dev you can:
+  - Put a token in `VITE_API_TOKEN`, **or**
+  - Enable `DEV_NO_AUTH=1` in the backend to bypass in dev
 
-Endpoints expect a Bearer token; for local dev you can:
+**UX considerations**
 
-Put a token in VITE_API_TOKEN, or
+- Responsive layout across pages
+- Clear success and error messages
+- Booking reference visually highlighted + copy button
 
-Enable DEV_NO_AUTH=1 in the backend to bypass in dev
+---
 
-UX considerations
+## Scripts
 
-Responsive layout across pages
-
-Clear success and error messages
-
-Booking reference visually highlighted + copy button
-
-Scripts
-bash
-Copy code
+```bash
 # Start dev server
 npm run dev
 
@@ -154,37 +152,41 @@ npm run build
 
 # Preview the production build
 npm run preview
-Configuration
-.env.local (frontend)
+```
 
-ini
-Copy code
+---
+
+## Configuration
+
+**`.env.local` (frontend)**
+
+```ini
 VITE_API_BASE=http://localhost:8547
 VITE_API_TOKEN=<optional: your bearer token>
-If backend runs with DEV_NO_AUTH=1, you can leave VITE_API_TOKEN blank.
-
-Troubleshooting
-401 Unauthorized in browser
-
-Ensure a valid token is set in VITE_API_TOKEN or the backend runs with DEV_NO_AUTH=1.
-
-After editing .env.local, restart npm run dev.
-
-CORS / preflight 405 on OPTIONS
-
-Confirm CORSMiddleware in app/main.py includes:
-
-allow_origins=["http://localhost:5173","http://127.0.0.1:5173"]
-
-allow_methods=["*"], allow_headers=["*"]
-
-422 Unprocessable Entity on availability
-
-Ensure the frontend sends application/x-www-form-urlencoded and includes VisitDate, PartySize, ChannelCode.
-
-Try a date within the next ~30 days (seeded by the mock).
-
-Package build errors on Windows (Python)
-
-Use Python 3.11 — Python 3.13 currently triggers native builds for pydantic-core.
 ```
+
+> If backend runs with `DEV_NO_AUTH=1`, you can leave `VITE_API_TOKEN` blank.
+
+---
+
+## Troubleshooting
+
+**401 Unauthorized in browser**
+
+- Ensure a valid token is set in `VITE_API_TOKEN` **or** the backend runs with `DEV_NO_AUTH=1`.
+- After editing `.env.local`, restart `npm run dev`.
+
+**CORS / preflight 405 on OPTIONS**
+
+- Confirm `CORSMiddleware` in `app/main.py` includes:
+  - `allow_origins=["http://localhost:5173","http://127.0.0.1:5173"]`
+  - `allow_methods=["*"]`, `allow_headers=["*"]`
+
+**422 Unprocessable Entity on availability**
+
+- Ensure the frontend sends `application/x-www-form-urlencoded` and includes `VisitDate`, `PartySize`, `ChannelCode`.
+- Try a date within the next ~30 days (seeded by the mock).
+
+**Package build errors on Windows (Python)**
+
+- Use Python 3.11 — Python 3.13 currently triggers native builds for `pydantic-core`.
