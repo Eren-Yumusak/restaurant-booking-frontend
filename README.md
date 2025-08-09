@@ -1,25 +1,29 @@
-Restaurant Booking — Frontend
+# Restaurant Booking — Frontend
+
 A small React + TypeScript web app that integrates with the provided FastAPI mock API to manage restaurant bookings.
 
-Features (per brief)
-Search availability (date, party size) for a specific restaurant
+---
 
-Select an available time slot and create a booking with customer details
+## Features (per brief)
 
-Show booking confirmation and reference (with copy button)
+- Search availability (date, party size) for a specific restaurant
+- Select an available time slot and create a booking with customer details
+- Show booking confirmation and reference (with copy button)
+- Manage an existing booking: lookup by reference, update, and cancel with a reason
+- Good UX: responsive layout, form validation, clear error/success messages
 
-Manage an existing booking: lookup by reference, update, and cancel with a reason
+---
 
-Good UX: responsive layout, form validation, clear error/success messages
+## Prerequisites
 
-Prerequisites
-Node.js 18+ and npm
+- Node.js 18+ and npm
+- FastAPI mock server running locally at `http://localhost:8547` (see “Backend setup” below)
 
-FastAPI mock server running locally at http://localhost:8547 (see “Backend (mock API) setup” below)
+---
 
-Quick start (Frontend)
-bash
-Copy code
+## Quick start (Frontend)
+
+```bash
 # 1) Create the app (if not done already)
 npm create vite@latest booking-frontend -- --template react-ts
 cd booking-frontend
@@ -31,8 +35,8 @@ npx tailwindcss init -p
 
 # 3) Environment vars
 # Create .env.local at the project root:
-# VITE_API_BASE=http://localhost:8547
-# VITE_API_TOKEN=<paste your bearer token here, or leave blank if using dev bypass>
+VITE_API_BASE=http://localhost:8547
+VITE_API_TOKEN=<paste your bearer token here, or leave blank if using dev bypass>
 
 # 4) Run dev server
 npm run dev
@@ -62,7 +66,11 @@ python -m app
 # (Option B) Dev bypass auth (no token needed)
 $env:DEV_NO_AUTH = "1"
 python -m app
+Docs:
 
+Swagger: http://localhost:8547/docs
+
+Redoc: http://localhost:8547/redoc
 
 How to use the app
 Book a table
@@ -116,7 +124,8 @@ Base URL from VITE_API_BASE
 
 Bearer token from VITE_API_TOKEN (or dev-bypass on backend)
 
-Important: POST/PATCH bodies use application/x-www-form-urlencoded (not JSON). We serialize with URLSearchParams/manual encoder.
+Important: POST/PATCH bodies use application/x-www-form-urlencoded (not JSON).
+We serialize with URLSearchParams / manual encoder.
 
 Auth (per mock API)
 
@@ -160,3 +169,22 @@ Troubleshooting
 Ensure a valid token is set in VITE_API_TOKEN or the backend runs with DEV_NO_AUTH=1.
 
 After editing .env.local, restart npm run dev.
+
+CORS / preflight 405 on OPTIONS
+
+Confirm CORSMiddleware in app/main.py includes:
+
+allow_origins=["http://localhost:5173","http://127.0.0.1:5173"]
+
+allow_methods=["*"], allow_headers=["*"]
+
+422 Unprocessable Entity on availability
+
+Ensure the frontend sends application/x-www-form-urlencoded and includes VisitDate, PartySize, ChannelCode.
+
+Try a date within the next ~30 days (seeded by the mock).
+
+Package build errors on Windows (Python)
+
+Use Python 3.11 — Python 3.13 currently triggers native builds for pydantic-core.
+```
